@@ -175,9 +175,52 @@ r_CI
 
 ```
 
-## Comment on the plot:
+## Comment on the plot and CI:
 This density plot illustrates the distribution of R-squared values derived from 5000 bootstrap samples, showcasing a bell-shaped curve centered around 0.91 to 0.92. This central peak indicates that the majority of the bootstrap samples yield a model explaining approximately 91-92% of the variance in the dependent variable. The distribution's narrowness, with most values ranging from 0.89 to 0.93, suggests a high level of stability and precision in the model's fit across the bootstrap samples. Consequently, the plot visually conveys the reliability of the R-squared estimate and offers a graphical representation of the estimate's sampling distribution.
 
 The confidence interval (CI) from 0.890 to 0.940 indicates with a certain level of confidence, we 95% confident that the true value of the R-squared statistic lies within this range, based on the bootstrap sampling method.
 
+step 3: 
+1) Use 5000 bootstrap samples and, for each bootstrap sample, produce estimates of estimate Log product. 
+2) Plot the distribution of your estimates, and describe these in words. Using the 5000 bootstrap estimates
+3) identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for estimate log product.
+4) make comment on the plot and CI
 
+```{r}
+bootstrap_results = 
+  boot_straps |> 
+  mutate(
+    models = map(strap_sample, weather_lm),
+    results = map(models, broom::tidy)) |> 
+  select(strap_number,results) |> 
+  unnest(results)
+
+bootstrap_estimates= bootstrap_results |> 
+  group_by(strap_number) |> 
+ summarise(tmin_estimate = estimate[term == "tmin"],
+            prcp_estimate =estimate[term == "prcp"])
+
+bootstrap_log=bootstrap_estimates|>
+  mutate(log_product = log(tmin_estimate * prcp_estimate)) |>
+  select(strap_number, log_product) 
+
+
+
+Logproduct_CI=bootstrap_log |> 
+  summarise(
+    ci_lower=quantile(log_product,0.025,na.rm=TRUE),
+    ci_upper=quantile(log_product,0.975,na.rm=TRUE)
+  )
+
+Logproduct_CI
+
+
+bootstrap_log |> 
+  ggplot(aes(x = log_product)) + 
+  geom_density()
+```
+
+## Comment on the plot and CI:
+The distribution appears to be unimodal with a peak around -7, indicating that the most common values of the log-transformed product variable cluster in this region. The shape of the curve is slightly skewed to the left, suggesting that there are fewer lower values and a tail stretching towards the higher values of the log_product. This could imply that while the majority of the products have moderate values, there is a long-range variation with fewer products having very high values when back-transformed to their original scale. The use of a log transformation typically aims to normalize data, handle skewness, and manage outliers, suggesting the original product data may have been right-skewed or contained outliers.
+
+The confidence interval (CI) presented, with a lower bound of -8.93 and an upper bound of -4.59, we are 95% confident that the true mean of the logarithmically transformed product variable lies within this range.
