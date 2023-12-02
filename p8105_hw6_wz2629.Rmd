@@ -224,3 +224,19 @@ bootstrap_log |>
 The distribution appears to be unimodal with a peak around -7, indicating that the most common values of the log-transformed product variable cluster in this region. The shape of the curve is slightly skewed to the left, suggesting that there are fewer lower values and a tail stretching towards the higher values of the log_product. This could imply that while the majority of the products have moderate values, there is a long-range variation with fewer products having very high values when back-transformed to their original scale. The use of a log transformation typically aims to normalize data, handle skewness, and manage outliers, suggesting the original product data may have been right-skewed or contained outliers.
 
 The confidence interval (CI) presented, with a lower bound of -8.93 and an upper bound of -4.59, we are 95% confident that the true mean of the logarithmically transformed product variable lies within this range.
+
+
+# Problem 3
+
+Step1: Load and clean the data for regression analysis (i.e. convert numeric to factor where appropriate, check for missing data, etc.).
+```{r}
+child_birthweight = read_csv("./data/birthweight.csv") 
+birthweight=na.omit(child_birthweight) |> 
+  mutate(
+    babysex=as.factor(babysex),
+    frace=as.factor(frace),
+    malform=as.factor(malform),
+    mrace=as.factor(mrace)
+  )
+```
+
