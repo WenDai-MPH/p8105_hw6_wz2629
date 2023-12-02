@@ -240,3 +240,27 @@ birthweight=na.omit(child_birthweight) |>
   )
 ```
 
+Step 2: Propose a regression model for birthweight. This model may be based on a hypothesized structure for the factors that underly birthweight, on a data-driven model-building process, or a combination of the two. Describe your modeling process and show a plot of model residuals against fitted values 
+```{r}
+birthweight_model=lm(bwt ~ gaweeks + momage + ppbmi+ smoken + wtgain, data=birthweight) 
+
+child_birthweight|> 
+  modelr::add_predictions(birthweight_model) |> 
+  modelr::add_residuals(birthweight_model) |> 
+  ggplot(aes(x=pred, y=resid))+
+  geom_point()
+
+```
+
+## Comments:
+Based on medical knowledge, certain variables are known to have a direct influence on birth weight based on a hypothesized structure for the factors that underly birthweight. These include:
+1. Gestational Age (gaweeks): Generally, the longer the gestation, the heavier the baby.
+2. Mother's Pre-pregnancy BMI (ppbmi): Maternal BMI is linked with birth weight; overweight or obesity in mothers can lead to higher birth weight, and underweight can lead to lower birth weight.
+3. Mother's Weight Gain During Pregnancy (wtgain): Adequate weight gain during pregnancy is crucial for a healthy birth weight.
+4. Smoking (smoken): Smoking is associated with lower birth weight.
+5. Mother’s Age at Delivery (momage): Maternal age can be a factor in birth weight, with very young and older mothers often having babies with lower birth weight.
+
+The residual plot displays the residuals of a regression model against the predicted values, where ideally we would expect to see a random scatter of points. Upon re-examination of the residual plot, we see that the distribution of residuals does not display a uniform variance across the range of fitted values. 
+
+
+
