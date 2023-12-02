@@ -124,6 +124,21 @@ weather_df =
     tmax = tmax / 10) |>
   select(name, id, everything())
 
+
+
+weather_lm=function(df) {
+  fit=
+    lm(tmax ~ tmin + prcp,data=df)
+}
+
+```
+
+step 2: 
+1) Use 5000 bootstrap samples and, for each bootstrap sample, produce estimates of estimate R_squared. 
+2) Plot the distribution of your estimates, and describe these in words. Using the 5000 bootstrap estimates
+3) identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for estimate R_squared.
+
+```{r}
 boot_sample = function(df) {
   sample_frac(df, replace = TRUE)
 }
@@ -135,10 +150,34 @@ boot_straps =
   )
 
 
-weather_lm=function(df) {
-  fit=
-    lm(tmax ~ tmin + prcp,data=df)
-}
+r_squared = 
+  boot_straps |> 
+  mutate(
+    models = map(strap_sample, weather_lm),
+    results = map(models, broom::glance)) |> 
+  select(strap_number,results) |> 
+  unnest(results)  |> select(strap_number,r.squared)
+
+r_squared
+
+r_squared |> 
+  ggplot(aes(x = r.squared)) + 
+  geom_density()
+
+r_CI=r_squared |> 
+  summarise(
+    ci_lower=quantile(r.squared,0.025),
+    ci_upper=quantile(r.squared,0.975)
+  )
+
+r_CI
+
 
 ```
+
+## Comment on the plot:
+This density plot illustrates the distribution of R-squared values derived from 5000 bootstrap samples, showcasing a bell-shaped curve centered around 0.91 to 0.92. This central peak indicates that the majority of the bootstrap samples yield a model explaining approximately 91-92% of the variance in the dependent variable. The distribution's narrowness, with most values ranging from 0.89 to 0.93, suggests a high level of stability and precision in the model's fit across the bootstrap samples. Consequently, the plot visually conveys the reliability of the R-squared estimate and offers a graphical representation of the estimate's sampling distribution.
+
+The confidence interval (CI) from 0.890 to 0.940 indicates with a certain level of confidence, we 95% confident that the true value of the R-squared statistic lies within this range, based on the bootstrap sampling method.
+
 
