@@ -108,4 +108,37 @@ model_results |>
 ```
 
 
+# Problem 2
+
+Step1 : download the data and build a simple linear regression with tmax as the response with tmin and prcp as the predictors
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2022-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+
+boot_sample = function(df) {
+  sample_frac(df, replace = TRUE)
+}
+
+boot_straps = 
+  tibble(strap_number = 1:5000) |> 
+  mutate(
+    strap_sample = map(strap_number, \(i) boot_sample(df = weather_df))
+  )
+
+
+weather_lm=function(df) {
+  fit=
+    lm(tmax ~ tmin + prcp,data=df)
+}
+
+```
 
